@@ -1,0 +1,219 @@
+/* paleta e medidas do projeto */
+:root {
+  --breu:    #0b0a0c;
+  --parede:  #191419;
+  --chao:    #241d23;
+  --giz:     #cfc4bb;
+  --giz-fraco: #6f6660;
+  --vela:    #c9a227;
+  --sangue:  #8f2b2b;
+
+  --cel: clamp(30px, 3.5vw, 58px);        /* lado de cada casa do labirinto */
+  --pad: calc(var(--cel) / 3);            /* respiro dentro da moldura */
+  --tipo: ui-monospace, "SF Mono", "DejaVu Sans Mono", Menlo, Consolas, monospace;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--breu);
+  color: var(--giz);
+  font-family: var(--tipo);
+  font-size: clamp(13px, 0.85vw, 19px);
+  letter-spacing: 0.04em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2vw;
+}
+
+* { box-sizing: border-box; }
+
+.sala {
+  display: flex;
+  gap: 3vw;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+h1, h2 {
+  font-size: 1em;
+  font-weight: 400;
+  color: var(--giz-fraco);
+  margin: 0 0 0.9em;
+}
+
+/* ---------- labirinto ---------- */
+
+.moldura {
+  position: relative;
+  padding: var(--pad);
+  background: #120e12;
+  border: 2px solid #2b2229;
+  box-shadow: inset 0 0 0 1px #060506;
+}
+
+.grade {
+  display: grid;
+  grid-template-columns: repeat(var(--colunas), var(--cel));
+  grid-auto-rows: var(--cel);
+}
+
+.casa {
+  width: var(--cel);
+  height: var(--cel);
+  background: var(--chao);
+  box-shadow: inset -1px -1px 0 #1b151a;   /* junta seca entre as lajotas */
+}
+
+.casa.parede {
+  background: var(--parede);
+  box-shadow: inset 1px 1px 0 #241d24, inset -1px -1px 0 #0d0a0d;
+}
+
+/* corredor estreito: risco no chao pra dar pra ver onde o Lock atua */
+.casa.corredor {
+  background:
+    repeating-linear-gradient(90deg, #2e2429 0 3px, transparent 3px 6px),
+    var(--chao);
+}
+
+.casa.item,
+.casa.saida,
+.casa.inicio {
+  display: grid;
+  place-items: center;
+  font-size: 0.85em;
+}
+
+.casa.item   { color: var(--vela); text-shadow: 0 0 6px rgba(201,162,39,.45); }
+.casa.saida  { color: var(--sangue); background: #2a1b1c; }
+.casa.inicio { color: var(--giz-fraco); }
+
+/* ---------- exploradores no mapa ---------- */
+
+.pecas {
+  position: absolute;
+  top: var(--pad);
+  left: var(--pad);
+  pointer-events: none;
+}
+
+.peca {
+  position: absolute;
+  width: calc(var(--cel) * 0.6);
+  height: calc(var(--cel) * 0.6);
+  margin: calc(var(--cel) * 0.2);      /* centraliza dentro da casa */
+  background: var(--giz);
+  /* shading em degraus, sem blur, pra ficar com cara de sprite */
+  box-shadow:
+    inset -3px -3px 0 rgba(0,0,0,.45),
+    inset  3px  3px 0 rgba(255,255,255,.18),
+    0 0 10px rgba(207,196,187,.25);
+  transition: transform .3s steps(3);  /* pula em degraus, nao desliza */
+}
+
+.peca.suspenso {
+  background: #4a4448;
+  box-shadow: inset -3px -3px 0 rgba(0,0,0,.5);
+  opacity: .75;
+}
+
+.peca.saiu { opacity: 0; }
+
+.peca .marca {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 0.75em;
+  color: #171316;
+}
+
+/* ---------- vinheta ---------- */
+
+.vinheta {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center,
+              transparent 30%, rgba(6,5,7,.55) 72%, rgba(6,5,7,.9) 100%);
+}
+
+.corredor {
+  margin: 0.9em 0 0;
+  color: var(--giz-fraco);
+}
+
+.corredor.ocupado { color: var(--vela); }
+
+/* ---------- painel lateral ---------- */
+
+.painel { width: clamp(240px, 20vw, 360px); }
+
+.ficha {
+  border: 1px solid #2b2229;
+  border-left: 3px solid var(--giz);
+  padding: 0.8em 0.9em;
+  margin-bottom: 0.8em;
+  background: #120e12;
+}
+
+.ficha.suspenso { border-left-color: var(--giz-fraco); opacity: .6; }
+.ficha.completo { border-left-color: var(--vela); }
+.ficha.finalizado,
+.ficha.saiu { border-left-color: #2b2229; opacity: .4; }
+
+.ficha .nome {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.6em;
+}
+
+.ficha .estado { color: var(--giz-fraco); }
+.ficha.suspenso .estado { color: var(--sangue); }
+
+.tarefas {
+  display: flex;
+  gap: 0.45em;
+  margin-bottom: 0.8em;
+}
+
+.tarefa {
+  padding: 0.15em 0.55em;
+  border: 1px solid #2b2229;
+  color: var(--giz-fraco);
+}
+
+.tarefa.feita {
+  border-color: var(--vela);
+  color: var(--vela);
+}
+
+.acoes { display: flex; gap: 0.45em; flex-wrap: wrap; }
+
+button {
+  font: inherit;
+  letter-spacing: inherit;
+  color: var(--giz);
+  background: #1b151a;
+  border: 1px solid #322730;
+  padding: 0.4em 0.7em;
+  cursor: pointer;
+}
+
+button:hover { background: #241d23; }
+button:focus-visible { outline: 2px solid var(--vela); outline-offset: 2px; }
+
+.criar { width: 100%; margin-top: 0.45em; }
+
+.aviso {
+  min-height: 1.4em;
+  margin: 0.8em 0 0;
+  color: var(--sangue);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .peca { transition: none; }
+}
