@@ -1,6 +1,6 @@
-// Enquanto o coordenador nao existe, le do arquivo falso.
-// Quando a Parte 4 ficar pronta, trocar por "/estado" e "/comando".
-const URL_ESTADO = "estado_falso.json";
+// O coordenador serve o estado e recebe os comandos.
+// Para testar a interface sem backend, apontar URL_ESTADO para "estado_falso.json".
+const URL_ESTADO = "/estado";
 const URL_COMANDO = "/comando";
 const INTERVALO = 300;
 
