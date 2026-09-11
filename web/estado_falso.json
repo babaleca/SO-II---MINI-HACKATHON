@@ -1,0 +1,42 @@
+{
+  "mapa": [
+    "#################",
+    "#S....#.....#..L#",
+    "#.###.#.###.#.#.#",
+    "#.#R..~...#.~.#.#",
+    "#.#.###.#.#.#.#.#",
+    "#...#...#...#..C#",
+    "#.#.#.#.###.###.#",
+    "#.#...#.....#...#",
+    "#.#####.###.#.#.#",
+    "#B....~...#...#E#",
+    "#################"
+  ],
+  "exploradores": [
+    {
+      "id": 1,
+      "nome": "Vulto",
+      "pos": [1, 4],
+      "status": "rodando",
+      "checklist": { "L": true, "R": false },
+      "completo": false
+    },
+    {
+      "id": 2,
+      "nome": "Bruma",
+      "pos": [5, 6],
+      "status": "suspenso",
+      "checklist": { "R": false, "C": false },
+      "completo": false
+    },
+    {
+      "id": 3,
+      "nome": "Cinza",
+      "pos": [9, 8],
+      "status": "rodando",
+      "checklist": { "C": true, "B": true },
+      "completo": true
+    }
+  ],
+  "corredor_ocupado": true
+}
