@@ -2,10 +2,32 @@ import multiprocessing
 import os
 import queue as fila_vazia
 import signal
+import sys
+
+try:
+    import psutil
+except ImportError:
+    psutil = None
 
 import explorador
 import labirinto
 import protocolo
+
+WINDOWS = sys.platform == "win32"
+
+
+def _parar_processo(pid):
+    if WINDOWS:
+        psutil.Process(pid).suspend()
+    else:
+        os.kill(pid, signal.SIGSTOP)
+
+
+def _seguir_processo(pid):
+    if WINDOWS:
+        psutil.Process(pid).resume()
+    else:
+        os.kill(pid, signal.SIGCONT)
 
 
 class Coordenador:
@@ -89,7 +111,7 @@ class Coordenador:
             return
 
         if self.exploradores[id_exp]["status"] == protocolo.SUSPENSO:
-            os.kill(processo.pid, signal.SIGCONT)
+            _seguir_processo(processo.pid)
 
         evento.set()
         self.exploradores[id_exp]["status"] = protocolo.FINALIZADO
@@ -98,14 +120,14 @@ class Coordenador:
         processo = self.processos.get(id_exp)
         if processo is None or not processo.is_alive():
             return
-        os.kill(processo.pid, signal.SIGSTOP)
+        _parar_processo(processo.pid)
         self.exploradores[id_exp]["status"] = protocolo.SUSPENSO
 
     def retomar(self, id_exp):
         processo = self.processos.get(id_exp)
         if processo is None or not processo.is_alive():
             return
-        os.kill(processo.pid, signal.SIGCONT)
+        _seguir_processo(processo.pid)
         self.exploradores[id_exp]["status"] = protocolo.RODANDO
 
     def corredor_esta_ocupado(self):

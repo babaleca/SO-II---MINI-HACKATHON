@@ -1,13 +1,19 @@
+import functools
 import json
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+import os
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 
 import protocolo
 from coordenador import Coordenador
 
-coordenador = Coordenador()
+PASTA_WEB = os.path.join(os.path.dirname(os.path.abspath(__file__)), "web")
 
 
-class Handler(BaseHTTPRequestHandler):
+class Handler(SimpleHTTPRequestHandler):
+    def __init__(self, *args, coordenador, **kwargs):
+        self.coordenador = coordenador
+        super().__init__(*args, directory=PASTA_WEB, **kwargs)
+
     def _cabecalhos(self, status=200):
         self.send_response(status)
         self.send_header("Content-Type", "application/json")
@@ -16,12 +22,11 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         if self.path == protocolo.ROTA_ESTADO:
-            corpo = json.dumps(coordenador.estado_atual()).encode("utf-8")
+            corpo = json.dumps(self.coordenador.estado_atual()).encode("utf-8")
             self._cabecalhos(200)
             self.wfile.write(corpo)
         else:
-            self._cabecalhos(404)
-            self.wfile.write(b'{"erro": "rota desconhecida"}')
+            super().do_GET()
 
     def do_POST(self):
         if self.path != protocolo.ROTA_COMANDO:
@@ -35,16 +40,16 @@ class Handler(BaseHTTPRequestHandler):
         id_exp = dados.get("id")
 
         if acao == protocolo.ACAO_CRIAR:
-            novo_id = coordenador.criar_explorador()
+            novo_id = self.coordenador.criar_explorador()
             resposta = {"ok": True, "id": novo_id}
         elif acao == protocolo.ACAO_FINALIZAR:
-            coordenador.finalizar(id_exp)
+            self.coordenador.finalizar(id_exp)
             resposta = {"ok": True}
         elif acao == protocolo.ACAO_SUSPENDER:
-            coordenador.suspender(id_exp)
+            self.coordenador.suspender(id_exp)
             resposta = {"ok": True}
         elif acao == protocolo.ACAO_RETOMAR:
-            coordenador.retomar(id_exp)
+            self.coordenador.retomar(id_exp)
             resposta = {"ok": True}
         else:
             self._cabecalhos(400)
@@ -62,8 +67,11 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def main():
+    coordenador = Coordenador()
     coordenador.criar_iniciais()
-    servidor = ThreadingHTTPServer(("localhost", protocolo.PORTA), Handler)
+
+    handler = functools.partial(Handler, coordenador=coordenador)
+    servidor = ThreadingHTTPServer(("localhost", protocolo.PORTA), handler)
     print(f"Coordenador no ar em http://localhost:{protocolo.PORTA}")
     try:
         servidor.serve_forever()
