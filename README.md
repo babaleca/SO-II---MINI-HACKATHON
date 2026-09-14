@@ -101,8 +101,8 @@ Grid fixo de 17 por 11 casas.
 | --- | --- | --- |
 | 1. Contratos e mapa | Bárbara Bandarra | `protocolo.py`, `labirinto.py` |
 | 2. Interface | Bárbara Bandarra | `web/` |
-| 3. Explorador | | `explorador.py` |
-| 4. Coordenador e servidor | | `coordenador.py`, `servidor.py` |
+| 3. Explorador |Gabriel Fonseca| `explorador.py` |
+| 4. Coordenador e servidor |Isadora Pio | `coordenador.py`, `servidor.py` |
 
 O `protocolo.py` foi escrito primeiro justamente para permitir que as outras três partes fossem desenvolvidas em paralelo, cada uma em sua branch, sem depender do término das demais.
 
