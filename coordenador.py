@@ -3,6 +3,7 @@ import os
 import queue as fila_vazia
 import signal
 import sys
+import time
 
 try:
     import psutil
@@ -14,6 +15,9 @@ import labirinto
 import protocolo
 
 WINDOWS = sys.platform == "win32"
+
+# tempo que um explorador finalizado/saido fica visivel antes de sumir sozinho
+REMOCAO_AUTOMATICA_SEGUNDOS = 3
 
 
 def _parar_processo(pid):
@@ -37,6 +41,7 @@ class Coordenador:
         self.processos = {}
         self.eventos_parada = {}
         self.exploradores = {}
+        self.tempo_termino = {}
         self._proximo_id = 0
         self._proximo_indice_checklist = 0
 
@@ -98,6 +103,7 @@ class Coordenador:
                 exp["checklist"][msg["item"]] = True
         elif tipo == protocolo.MSG_SAIU:
             exp["status"] = protocolo.SAIU
+            self.tempo_termino[msg["id"]] = time.time()
         elif tipo == protocolo.MSG_BLOQUEADO:
             pass
 
@@ -108,6 +114,7 @@ class Coordenador:
             return
         if not processo.is_alive():
             self.exploradores[id_exp]["status"] = protocolo.FINALIZADO
+            self.tempo_termino[id_exp] = time.time()
             return
 
         if self.exploradores[id_exp]["status"] == protocolo.SUSPENSO:
@@ -115,6 +122,28 @@ class Coordenador:
 
         evento.set()
         self.exploradores[id_exp]["status"] = protocolo.FINALIZADO
+        self.tempo_termino[id_exp] = time.time()
+
+    def remover(self, id_exp):
+        exp = self.exploradores.get(id_exp)
+        if exp is None:
+            return
+        if exp["status"] not in (protocolo.FINALIZADO, protocolo.SAIU):
+            self.finalizar(id_exp)
+
+        self.processos.pop(id_exp, None)
+        self.eventos_parada.pop(id_exp, None)
+        self.exploradores.pop(id_exp, None)
+        self.tempo_termino.pop(id_exp, None)
+
+    def _remover_terminados_antigos(self):
+        agora = time.time()
+        vencidos = [
+            id_exp for id_exp, quando in self.tempo_termino.items()
+            if agora - quando >= REMOCAO_AUTOMATICA_SEGUNDOS
+        ]
+        for id_exp in vencidos:
+            self.remover(id_exp)
 
     def suspender(self, id_exp):
         processo = self.processos.get(id_exp)
@@ -139,6 +168,7 @@ class Coordenador:
 
     def estado_atual(self):
         self.processar_mensagens()
+        self._remover_terminados_antigos()
         lista = [
             protocolo.explorador_estado(
                 id_exp, exp["nome"], exp["pos"][0], exp["pos"][1],

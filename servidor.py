@@ -51,6 +51,9 @@ class Handler(SimpleHTTPRequestHandler):
         elif acao == protocolo.ACAO_RETOMAR:
             self.coordenador.retomar(id_exp)
             resposta = {"ok": True}
+        elif acao == protocolo.ACAO_REMOVER:
+            self.coordenador.remover(id_exp)
+            resposta = {"ok": True}
         else:
             self._cabecalhos(400)
             self.wfile.write(b'{"erro": "acao desconhecida"}')
