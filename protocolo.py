@@ -25,6 +25,7 @@ ACAO_CRIAR = "criar"
 ACAO_FINALIZAR = "finalizar"
 ACAO_SUSPENDER = "suspender"
 ACAO_RETOMAR = "retomar"
+ACAO_REMOVER = "remover"
 
 
 # ---------------------------------------------------------------

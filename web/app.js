@@ -83,19 +83,24 @@ function desenharFichas(exploradores) {
   for (const e of exploradores) {
     const ficha = document.createElement("div");
     ficha.className = "ficha " + e.status + (e.completo ? " completo" : "");
+    const terminado = e.status === "finalizado" || e.status === "saiu";
 
     const tarefas = Object.entries(e.checklist)
       .map(([s, feito]) => `<span class="tarefa ${feito ? "feita" : ""}"
                                   title="${ITENS[s] || s}">${s}</span>`)
       .join("");
 
+    const botoesAtivos = `
+        <button data-acao="suspender" data-id="${e.id}">Suspender</button>
+        <button data-acao="retomar" data-id="${e.id}">Retomar</button>
+        <button data-acao="finalizar" data-id="${e.id}">Finalizar</button>`;
+    const botaoRemover = `<button data-acao="remover" data-id="${e.id}">Remover</button>`;
+
     ficha.innerHTML = `
       <div class="nome"><span>${e.nome}</span><span class="estado">${e.status}</span></div>
       <div class="tarefas">${tarefas}</div>
       <div class="acoes">
-        <button data-acao="suspender" data-id="${e.id}">Suspender</button>
-        <button data-acao="retomar" data-id="${e.id}">Retomar</button>
-        <button data-acao="finalizar" data-id="${e.id}">Finalizar</button>
+        ${terminado ? botaoRemover : botoesAtivos}
       </div>`;
 
     fichas.appendChild(ficha);
